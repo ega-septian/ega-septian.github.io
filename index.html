@@ -275,6 +275,24 @@
     <section id="projects" class="section section-alt">
       <h2 class="section-title">Projects</h2>
       <p class="projects-intro">Check out my GitHub profile and contribution activity.</p>
+      <div class="projects-featured">
+        <article class="project-featured">
+          <a href="assets/architecture.png" target="_blank" rel="noopener noreferrer" class="project-featured-image-link" title="View full diagram">
+            <img src="assets/architecture.png" alt="Architecture diagram of the Three-Agent QA Pipeline: a Confluence requirement flows through Product Manager, QA Tester, and Automation Engineer agents into a CI/CD pipeline that auto-closes its own Jira ticket on a passing merge." class="project-featured-image" loading="lazy" width="1864" height="3210">
+          </a>
+          <div class="project-featured-body">
+            <h3>Three-Agent QA Pipeline</h3>
+            <p>Built a requirement-to-deployment test automation architecture for an e-commerce app, splitting QA into three independent roles — Product Manager, QA Tester, and Automation Engineer — so a test's expected result can never be copied from the very code it's meant to verify. A GitHub Actions pipeline runs the full Playwright suite on every push, and a passing merge on a fix branch automatically closes the Jira ticket it was written for, no manual status updates.</p>
+            <div class="project-featured-tags">
+              <span class="project-tag">Playwright</span>
+              <span class="project-tag">Qase</span>
+              <span class="project-tag">GitHub Actions</span>
+              <span class="project-tag">Jira REST API</span>
+            </div>
+            <a href="assets/architecture.png" target="_blank" rel="noopener noreferrer" class="project-featured-link">View full diagram ↗</a>
+          </div>
+        </article>
+      </div>
       <div class="projects-github">
         <a href="https://github.com/ega-septian" target="_blank" rel="noopener noreferrer" class="project-card project-card-github">
           <span class="project-card-icon" aria-hidden="true">

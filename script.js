@@ -1,96 +1,173 @@
 (function () {
-  // Footer year
+  'use strict';
+
+  var header = document.querySelector('.site-header');
+  var nav = document.getElementById('site-nav');
+  var navToggle = document.querySelector('.nav-toggle');
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.site-nav a[href^="#"]'));
+  var sections = navLinks
+    .map(function (link) { return document.querySelector(link.getAttribute('href')); })
+    .filter(Boolean);
+  var toast = document.querySelector('.toast');
+  var toastTimer;
+  var ticking = false;
+
+  /* Footer year */
   var yearEl = document.getElementById('year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  // Mobile nav toggle
-  var toggle = document.querySelector('.nav-toggle');
-  var navLinks = document.querySelector('.nav-links');
-  if (toggle && navLinks) {
-    toggle.addEventListener('click', function () {
-      navLinks.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', navLinks.classList.contains('is-open'));
+  /* Header state + scrollspy */
+  function updateActiveLink() {
+    if (!sections.length) return;
+
+    var offset = window.scrollY + (header ? header.offsetHeight : 0) + 140;
+    var current = null;
+
+    sections.forEach(function (section) {
+      if (section.offsetTop <= offset) current = section;
     });
-    navLinks.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        navLinks.classList.remove('is-open');
-      });
+
+    var atBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 4;
+
+    if (atBottom) current = sections[sections.length - 1];
+
+    navLinks.forEach(function (link) {
+      if (current && link.getAttribute('href') === '#' + current.id) {
+        link.setAttribute('aria-current', 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
     });
   }
 
-  // Scroll-reveal: fade/rise elements in as they enter the viewport.
-  // Skipped entirely for reduced-motion users -- everything just stays visible.
-  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var revealTargets = document.querySelectorAll('.reveal, .reveal-stagger > *');
-  if (revealTargets.length && !prefersReducedMotion && 'IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-    revealTargets.forEach(function (el) { observer.observe(el); });
+  function updateHeader() {
+    if (!header) return;
+    header.classList.toggle('is-scrolled', window.scrollY > 6);
+  }
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () {
+      updateHeader();
+      updateActiveLink();
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  updateHeader();
+  updateActiveLink();
+
+  /* Mobile navigation */
+  function setNavOpen(open) {
+    if (!nav || !navToggle) return;
+    nav.classList.toggle('is-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+
+  if (navToggle && nav) {
+    navToggle.addEventListener('click', function () {
+      setNavOpen(!nav.classList.contains('is-open'));
+    });
+
+    nav.addEventListener('click', function (event) {
+      if (event.target.closest('a')) setNavOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && nav.classList.contains('is-open')) {
+        setNavOpen(false);
+        navToggle.focus();
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (
+        nav.classList.contains('is-open') &&
+        !event.target.closest('.site-header')
+      ) {
+        setNavOpen(false);
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 900) setNavOpen(false);
+    });
+  }
+
+  /* Scroll reveal */
+  var reveals = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!('IntersectionObserver' in window) || reduceMotion) {
+    reveals.forEach(function (el) { el.classList.add('is-visible'); });
   } else {
-    revealTargets.forEach(function (el) { el.classList.add('is-visible'); });
-  }
-
-  // Active nav link: highlight whichever section is currently in view.
-  var sections = document.querySelectorAll('main section[id]');
-  var navAnchors = document.querySelectorAll('.nav-links a');
-  if (sections.length && navAnchors.length && 'IntersectionObserver' in window) {
-    var navObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        navAnchors.forEach(function (a) {
-          a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+    var revealObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
+          }
         });
-      });
-    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
-    sections.forEach(function (s) { navObserver.observe(s); });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' }
+    );
+
+    reveals.forEach(function (el) { revealObserver.observe(el); });
   }
 
-  // Hero stats: count up from 0 to their real value once visible.
-  // If JS or IntersectionObserver is unavailable, the static "6+"/"80%+"/etc.
-  // text already in the markup is left untouched -- no broken/blank state.
-  function animateCount(el) {
-    var target = parseInt(el.getAttribute('data-count-to'), 10);
-    var suffix = el.getAttribute('data-count-suffix') || '';
-    var duration = 1100;
-    var start = null;
-    function step(timestamp) {
-      if (start === null) start = timestamp;
-      var progress = Math.min((timestamp - start) / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(eased * target) + suffix;
-      if (progress < 1) requestAnimationFrame(step);
+  /* Copy email */
+  function showToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toast.classList.remove('is-visible');
+    }, 2400);
+  }
+
+  function fallbackCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+
+    var copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch (error) {
+      copied = false;
     }
-    requestAnimationFrame(step);
-  }
-  var countEls = document.querySelectorAll('.hero-stat-value[data-count-to]');
-  if (countEls.length && !prefersReducedMotion && 'IntersectionObserver' in window) {
-    var countObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          animateCount(entry.target);
-          countObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    countEls.forEach(function (el) { countObserver.observe(el); });
+
+    document.body.removeChild(field);
+    showToast(copied ? 'Email copied to clipboard' : 'Copy failed — ' + text);
   }
 
-  // Back to top button: appears after scrolling past the hero.
-  var backToTop = document.getElementById('back-to-top');
-  if (backToTop) {
-    var toggleBackToTop = function () {
-      backToTop.classList.toggle('is-visible', window.scrollY > 600);
-    };
-    toggleBackToTop();
-    window.addEventListener('scroll', toggleBackToTop, { passive: true });
-    backToTop.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  var copyButton = document.getElementById('copy-email');
+  if (copyButton) {
+    copyButton.addEventListener('click', function () {
+      var email = copyButton.getAttribute('data-email');
+      if (!email) return;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(email).then(
+          function () { showToast('Email copied to clipboard'); },
+          function () { fallbackCopy(email); }
+        );
+      } else {
+        fallbackCopy(email);
+      }
     });
   }
 })();

@@ -233,7 +233,7 @@
             <p class="eyebrow">02 / Selected work</p>
             <h2>Tools that make <br><em>quality visible.</em></h2>
           </div>
-          <p class="section-intro">Open-source tools and test frameworks built around one question: can a failing pipeline explain itself?</p>
+          <p class="section-intro">Tools and test architectures built around one question: how do you make quality repeatable?</p>
         </div>
 
         <article class="featured-project reveal">
@@ -283,6 +283,41 @@
             <div class="benchmark">
               <p class="benchmark-value">92–100%</p>
               <p class="benchmark-label">root-cause accuracy <br><span>0 false positives · planted-bug benchmark</span></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="featured-project featured-project--reverse reveal">
+          <div class="featured-copy">
+            <div class="project-meta">
+              <span class="tag">Test architecture</span>
+              <span class="project-year">2026</span>
+            </div>
+            <h3 class="project-name">Three-Agent QA Pipeline</h3>
+            <p class="project-sub">Spec-driven QA, from requirement to Jira closure.</p>
+            <p class="project-desc">A test architecture for an e-commerce app that separates product intent, test design, and automation across three independent agents. Expected results are written from the spec, never copied from the code they are meant to verify.</p>
+            <ul class="project-points">
+              <li>Product Manager, QA Tester, and Automation Engineer agents work from separate sources of truth.</li>
+              <li>GitHub Actions runs the full Playwright API and web suite on every push.</li>
+              <li>A passing merge automatically closes the Jira ticket it was written for, with no manual status updates.</li>
+            </ul>
+            <ul class="chips" aria-label="Three-Agent QA Pipeline tech stack">
+              <li>Playwright</li><li>Qase</li><li>GitHub Actions</li><li>Jira API</li>
+            </ul>
+            <div class="project-links">
+              <a class="link-arrow" href="assets/architecture.png" target="_blank" rel="noopener noreferrer">View full diagram
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="featured-visual featured-visual--diagram">
+            <a class="diagram-frame" href="assets/architecture.png" target="_blank" rel="noopener noreferrer" aria-label="Open the full Three-Agent QA Pipeline architecture diagram in a new tab">
+              <img src="assets/architecture.png" alt="Architecture diagram showing a Confluence requirement flowing through Product Manager, QA Tester, and Automation Engineer agents into a Playwright CI pipeline that closes its Jira ticket on merge." width="1864" height="3210" loading="lazy">
+            </a>
+            <div class="diagram-caption">
+              <span>Confluence → Qase → CI</span>
+              <span>Jira closes on merge</span>
             </div>
           </div>
         </article>
